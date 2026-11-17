@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>College Bus Route Optimization — Algorithm Laboratory</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="nav">
+  <b class="logo">🚌 BUS·LAB</b>
+  <div class="links hide-pres"><a href="#problem">Problem</a><a href="#builder">Input</a><a href="#learn">Learn algorithms</a><a href="#lab">Laboratory</a><a href="#compare">Compare</a><a href="#complexity">Complexity</a><a href="#insights">Insights</a><a href="#routeExplorer">Route Explorer</a><a href="#scenarios">Scenarios</a><a href="#operations">Driver sheet</a></div>
+  <div class="navbtns"><button id="codeBtn" class="btn sm pri">&lt;/&gt; VIEW CODE</button><button id="presBtn" class="btn sm">🎤 PRESENTATION MODE</button><button id="resetBtn" class="btn sm warn">↻ RESET SIMULATION</button></div>
+</nav>
+
+<header class="hero hide-pres" id="hero">
+  <canvas id="heroCanvas" aria-label="Animated 3D bus network"></canvas>
+  <div class="hero-txt">
+    <p class="eyebrow">DESIGN &amp; ANALYSIS OF ALGORITHMS · INTERACTIVE LABORATORY</p>
+    <h1>COLLEGE BUS ROUTE OPTIMIZATION</h1>
+    <p class="sub">Designing smarter transportation routes using Design and Analysis of Algorithms</p>
+    <div class="row"><button class="btn pri" id="heroStart">START SIMULATION</button><button class="btn" id="heroExplore">EXPLORE ALGORITHMS</button><button class="btn" id="heroOpen">OPEN 3D ROUTE</button></div>
+  </div>
+</header>
+
+<main>
+<section id="problem" class="sec">
+  <h2><span>01</span> The Problem</h2>
+  <p class="lead">A college bus must start at the college, visit every required pickup location, collect students without exceeding capacity, minimize total travel distance, and return to the college.</p>
+  <div class="flow"><div>COLLEGE</div><i>↓</i><div>PICKUP LOCATIONS</div><i>↓</i><div>STUDENT COLLECTION</div><i>↓</i><div>ROUTE OPTIMIZATION</div><i>↓</i><div>COLLEGE</div></div>
+  <div class="model-panel glass"><div><span class="model-kicker">MATHEMATICAL MODEL</span><h3>What are we optimizing?</h3><p class="model-equation">Minimize <b>Σ d(i, j) · x(i, j)</b></p><p class="note">Choose a closed route with the smallest total travel distance.</p></div><div class="model-rules"><div><b>01 · Start &amp; finish</b><span>The route begins and ends at the college depot.</span></div><div><b>02 · Visit every pickup</b><span>Every pickup location is visited exactly once.</span></div><div><b>03 · Respect capacity</b><span>Total students must be less than or equal to bus capacity.</span></div><div><b>04 · Minimize distance</b><span>Use the distance matrix to calculate the full round trip.</span></div></div></div>
+  <div class="cards hide-pres" aria-label="Real-world applications">
+    <div class="card">🎓<b>College transportation</b></div><div class="card">🏫<b>School buses</b></div><div class="card">💼<b>Employee transportation</b></div><div class="card">🚐<b>Campus shuttles</b></div>
+    <div class="card">📦<b>Delivery routing</b></div><div class="card">🏭<b>Logistics</b></div><div class="card">🚇<b>Public transportation</b></div><div class="card">🚛<b>Fleet optimization</b></div>
+  </div>
+</section>
+
+<section id="dash" class="sec">
+  <div class="stats">
+    <div><small>LOCATIONS</small><b id="hLoc">0</b></div><div><small>STUDENTS</small><b id="hStu">0</b></div><div><small>BUS CAPACITY</small><b id="hCap">0</b></div>
+    <div><small>BEST DISTANCE</small><b id="hDist">—</b></div><div><small>BEST ALGORITHM</small><b id="hBest">—</b></div><div><small>ALGORITHMS COMPLETED</small><b id="hDone">0 / 4</b></div>
+  </div>
+</section>
+
+<section id="builder" class="sec">
+  <h2><span>02</span> Data Builder</h2>
+  <div class="grid2">
+    <div class="glass">
+      <h3>Depot &amp; Bus</h3>
+      <div class="row"><label>Depot name<input id="depotName"></label><label>Bus capacity<input id="capInput" type="number" min="1"></label><label>Avg speed (km/h)<input id="speedInput" type="number" min="1"></label></div>
+      <div id="capBox" class="capbox"></div>
+      <h3>Pickup locations</h3>
+      <div id="locList" class="loclist"></div>
+      <div class="row addrow"><label>Name<input id="newName" placeholder="e.g. Adyar"></label><label>Students<input id="newStu" type="number" min="0" value="4"></label><button id="addBtn" class="btn pri">+ ADD LOCATION</button></div>
+      <p class="note">New distances start empty — fill them in the matrix or use auto-fill (random 5–25 km, symmetric).</p>
+      <button id="fillBtn" class="btn sm">Auto-fill missing distances</button>
+      <div id="valMsgs" class="msgs" role="status" aria-live="polite"></div>
+    </div>
+    <div class="glass"><h3>Distance matrix (km) <small>— edits are mirrored to keep it symmetric</small></h3><div class="scroll"><table id="matrix" class="matrix"></table></div></div>
+  </div>
+</section>
+
+<section id="learn" class="sec hide-pres">
+  <h2><span>03</span> Learn the Algorithms</h2><div id="edu"></div>
+</section>
+
+
+<section id="lab" class="sec">
+  <h2><span>04</span> 3D Algorithm Laboratory</h2>
+  <div class="tabs" id="algTabs" role="tablist"></div>
+  <div class="controls">
+    <button id="btnStart" class="btn pri">▶ START</button><button id="codeBtn2" class="btn">&lt;/&gt; CODE</button><button id="btnPause" class="btn">⏸ PAUSE</button><button id="btnNext" class="btn">⏭ NEXT STEP</button><button id="btnRestart" class="btn">↻ RESTART</button><button id="btnStop" class="btn">■ STOP</button>
+    <label class="inl">Speed <select id="speedSel"><option value="slow">SLOW</option><option value="normal" selected>NORMAL</option><option value="fast">FAST</option></select></label>
+    <button id="runAll" class="btn big">🚀 RUN ALL ALGORITHMS</button>
+  </div>
+  <div id="progress" class="progress" hidden><i></i><span></span></div>
+  <div id="labMsg" class="msgs" role="alert"></div>
+  <div class="labgrid">
+    <div class="stage">
+      <canvas id="labCanvas" tabindex="0" aria-label="3D route scene. Drag to rotate, shift-drag to pan, wheel or +/- to zoom, arrow keys rotate."></canvas>
+      <div class="zoom"><button class="btn sm" id="zIn" aria-label="Zoom in">+</button><button class="btn sm" id="zOut" aria-label="Zoom out">−</button><button class="btn sm" id="zRes" aria-label="Reset view">⟲</button></div>
+      <div class="legend">■ Depot · ○ Unvisited · ◉ Current · ✓ Visited · ━ Best route · ┅ Candidate · △ Invalid. Node height = students. #n = visit order of the candidate; faint lines = recently tried routes.</div>
+    </div>
+    <div class="side">
+      <div class="glass"><h3>🚌 Bus status</h3><div id="tele" class="tele"></div></div>
+      <div class="glass"><h3>Algorithm state</h3><div id="statePanel"></div></div>
+      <div class="glass"><h3>Node inspector</h3><div id="nodeInfo" class="note">Click a node in the 3D scene.</div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="glass"><h3>Algorithm execution</h3><div id="log" class="log" aria-live="off"></div></div>
+    <div class="glass"><h3>Route result</h3><div id="result" class="note">Run an algorithm to see its result card.</div></div>
+  </div>
+</section>
+
+<section id="compare" class="sec">
+  <h2><span>05</span> Algorithm Comparison</h2>
+  <div class="glass scroll"><table id="cmpTable" class="cmp"></table></div>
+  <p class="note">Execution time is measured in your browser and can vary with device performance. Search states are algorithm-specific counts, so compare them within the same algorithm and dataset.</p>
+  <div class="export-row"><button class="btn" id="exportCsv">⬇ EXPORT COMPARISON CSV</button><button class="btn" id="exportJson">⬇ DOWNLOAD ROUTE REPORT</button></div>
+  <div id="race" class="race"></div>
+  <div id="bestEngine" class="glass"></div>
+</section>
+
+<section id="complexity" class="sec">
+  <h2><span>06</span> Complexity Lab</h2>
+  <div class="glass">
+    <label class="inl">Pickup locations n = <b id="cxNval">6</b> <input id="cxN" type="range" min="1" max="20" value="6"></label>
+    <canvas id="cxCanvas" aria-label="Growth of theoretical operation counts (log scale)"></canvas>
+    <div class="scroll"><table id="cxTable" class="cmp"></table></div>
+    <p class="note">Theoretical counts are asymptotic models (log₁₀ scale), not measured times. Measured values from your latest runs are shown in the Comparison section.</p>
+  </div>
+</section>
+
+<section id="insights" class="sec">
+  <h2><span>07</span> Route Intelligence &amp; Insights</h2>
+  <p class="lead">Turn algorithm output into practical transport decisions. These visual summaries update when you edit the stops or run an algorithm.</p>
+  <div class="insight-grid">
+    <article class="glass chart-card"><div class="card-head"><div><h3>Route distance profile</h3><p class="note">Distance travelled on each leg of the best available route</p></div><span class="pill">LIVE DATA</span></div><canvas id="legCanvas" aria-label="Bar chart of route leg distances"></canvas><div id="legSummary" class="chart-foot"></div></article>
+    <article class="glass chart-card"><div class="card-head"><div><h3>Passenger capacity</h3><p class="note">How much of the bus capacity is planned to be used</p></div><span class="pill">CAPACITY</span></div><canvas id="capacityCanvas" aria-label="Passenger capacity chart"></canvas><div id="capacitySummary" class="chart-foot"></div></article>
+    <article class="glass chart-card wide"><div class="card-head"><div><h3>Algorithm performance snapshot</h3><p class="note">Best known distance from the algorithms completed so far</p></div><span class="pill">COMPARISON</span></div><canvas id="qualityCanvas" aria-label="Algorithm route distance comparison"></canvas><div id="qualitySummary" class="chart-foot"></div></article>
+  </div>
+  <div class="grid2 insight-bottom">
+    <div class="glass"><h3>Operational recommendations</h3><div id="recommendations" class="recommendations"></div></div>
+    <div class="glass"><h3>What the results mean</h3><div class="insight-copy"><p><b>Distance</b> estimates the total road-network cost represented by your matrix. It is not live navigation distance.</p><p><b>Travel time</b> is estimated as total distance divided by the average speed you enter. Traffic, waiting and road conditions are not included.</p><p><b>Capacity</b> checks total passengers against the selected bus capacity. This demo treats every pickup as a collection stop and does not model drop-offs.</p><p><b>Optimality</b> is guaranteed only by the exact search methods within their supported input limits. Heuristics trade proof of optimality for speed.</p></div></div>
+  </div>
+</section>
+
+
+<section id="routeExplorer" class="sec">
+  <h2><span>08</span> Algorithm Route Explorer</h2>
+  <p class="lead">Every method has its own dedicated explorer: inspect all Brute Force permutations, every Kruskal MST edge decision, every Held–Karp DP state, and every Divide-and-Conquer split and merge event. Each explorer includes a searchable, paginated catalogue and an individual graph for the selected item.</p>
+  <div class="method-route-grid" id="methodRouteGrid">
+    <article class="glass method-route-card"><div class="bf-head"><h3>Brute Force</h3><span class="pill">EXACT</span></div><canvas id="methodCanvasBrute" width="800" height="420" aria-label="Brute Force route graph"></canvas><p id="methodInfoBrute" class="note">Run Brute Force to display its route graph.</p></article>
+    <article class="glass method-route-card"><div class="bf-head"><h3>Kruskal MST</h3><span class="pill">GREEDY</span></div><canvas id="methodCanvasGreedy" width="800" height="420" aria-label="Kruskal MST route graph"></canvas><p id="methodInfoGreedy" class="note">Run Kruskal MST to display its route graph.</p></article>
+    <article class="glass method-route-card"><div class="bf-head"><h3>Held–Karp Dynamic Programming</h3><span class="pill">EXACT</span></div><canvas id="methodCanvasDp" width="800" height="420" aria-label="Dynamic Programming route graph"></canvas><p id="methodInfoDp" class="note">Run Dynamic Programming to display its route graph.</p></article>
+    <article class="glass method-route-card"><div class="bf-head"><h3>Divide and Conquer</h3><span class="pill">HEURISTIC</span></div><canvas id="methodCanvasDc" width="800" height="420" aria-label="Divide and Conquer route graph"></canvas><p id="methodInfoDc" class="note">Run Divide and Conquer to display its route graph.</p></article>
+  </div>
+  <h3 class="subsection-title"><span class="section-number">09</span> Brute Force — Complete Route Explorer</h3>
+  <div class="bf-hero glass">
+    <div><small>PERMUTATION SPACE</small><strong id="bfTotal">—</strong><span id="bfFormula">n! possible visiting orders</span></div>
+    <div><small>ROUTES ON THIS PAGE</small><strong id="bfPageCount">—</strong><span>Lazy generated · no duplicate orders</span></div>
+    <div><small>SELECTED ROUTE DISTANCE</small><strong id="bfSelectedDistance">—</strong><span id="bfSelectedRank">Choose a route below</span></div>
+    <div><small>BEST KNOWN DISTANCE</small><strong id="bfBestDistance">—</strong><span id="bfBestSource">Run Brute Force to confirm optimum</span></div>
+  </div>
+  <div class="bf-layout">
+    <div class="glass">
+      <div class="bf-head"><div><h3>Route catalogue</h3><p class="note">Browse every possible pickup order. Search within the current page by stop name or route number.</p></div><span class="pill">EXHAUSTIVE SEARCH SPACE</span></div>
+      <div class="bf-controls">
+        <label>Search routes<input id="bfSearch" type="search" placeholder="e.g. Route 25 or Tambaram"></label>
+        <label>Sort order<select id="bfSort"><option value="sequence">Permutation order</option><option value="distance-asc">Shortest distance first*</option><option value="distance-desc">Longest distance first*</option></select></label>
+        <label>Rows per page<select id="bfPageSize"><option>10</option><option selected>20</option><option>50</option><option>100</option></select></label>
+      </div>
+      <p class="note" id="bfSortNote">*Distance sorting applies to the currently generated catalogue page, not the entire factorial search space.</p>
+      <div class="bf-table-wrap"><table class="bf-table"><thead><tr><th>Route #</th><th>Visiting order</th><th>Distance</th><th>Action</th></tr></thead><tbody id="bfRows"></tbody></table></div>
+      <div class="bf-pagination"><button class="btn sm" id="bfPrev">← Previous</button><span id="bfPageLabel">Page 1</span><button class="btn sm" id="bfNext">Next →</button><label class="bf-jump">Go to route #<input id="bfJumpNumber" type="number" min="1" value="1"></label><button class="btn sm" id="bfGo">Open route</button><button class="btn sm" id="bfExport">Export current page CSV</button></div><div id="bfPageStats" class="bf-page-stats"></div>
+      <div id="bfNotice" class="msgs" role="status"></div>
+    </div>
+    <div class="bf-right">
+      <div class="glass"><div class="bf-head"><div><h3>Selected route graph</h3><p class="note">A dedicated route drawing for the selected permutation.</p></div><span class="pill">LIVE GRAPH</span></div>
+        <canvas id="bfCanvas" width="800" height="480" aria-label="Graph of the selected brute force route"></canvas><p class="note">Schematic visit-order graph — not a geographic street map. Use the distance matrix for the leg costs.</p>
+        <div id="bfRouteDetail" class="bf-detail">Select any route from the catalogue to inspect its graph, stop sequence and leg distances.</div>
+      </div>
+      <div class="glass"><h3>How to read this experiment</h3><div class="bf-explain">
+        <p><b>One route = one permutation.</b> With 7 pickup locations, the number of possible orders is 7! = <b>5,040</b>. It is 5,040, not 5,070.</p>
+        <p><b>Distance calculation.</b> Depot → pickup 1 → … → pickup n → depot. Every leg is looked up in your distance matrix and added to the total.</p>
+        <p><b>Optimal route.</b> Brute Force checks all permutations and keeps the smallest total. The catalogue lets you inspect individual candidates rather than only seeing the final answer.</p>
+        <p><b>Important.</b> The number shown updates to match the current number of pickup locations. The catalogue is paginated and routes are computed as requested.</p>
+      </div></div>
+    </div>
+  </div>
+  <div class="method-explorer-stack">
+    <article class="glass method-explorer" id="greedyExplorer">
+      <div class="method-explorer-head"><div><span class="pill">METHOD 02 · GREEDY</span><h3><span class="section-number">10</span> Kruskal MST — Complete Edge Explorer</h3><p class="note">Inspect every sorted edge, accept/reject (cycle) decision, preorder move and final return. Select any step to see its route graph and explanation.</p></div><div class="explorer-kpi"><small>DECISION STEPS</small><b id="greedyTraceCount">—</b></div></div>
+      <div class="explorer-grid"><div><div class="explorer-toolbar"><input id="greedyTraceSearch" type="search" placeholder="Search a stop or step"><span id="greedyTracePageLabel" class="note">Run Kruskal MST to build the trace.</span></div><div class="bf-table-wrap"><table class="bf-table"><thead><tr><th>Step</th><th>Action</th><th>Current / selected stop</th><th>Distance</th><th></th></tr></thead><tbody id="greedyTraceRows"></tbody></table></div><div class="bf-pagination"><button class="btn sm" id="greedyTracePrev">← Previous</button><button class="btn sm" id="greedyTraceNext">Next →</button></div></div><div class="explorer-detail"><h4 id="greedyTraceTitle">Selected decision</h4><canvas id="greedyTraceCanvas" width="800" height="460" aria-label="Kruskal MST selected step graph"></canvas><div id="greedyTraceInfo" class="bf-detail">Run Kruskal MST, then select a decision step.</div></div></div>
+    </article>
+    <article class="glass method-explorer" id="dpExplorer">
+      <div class="method-explorer-head"><div><span class="pill">METHOD 03 · EXACT DYNAMIC PROGRAMMING</span><h3><span class="section-number">11</span> Held–Karp DP — Complete State Explorer</h3><p class="note">Browse every computed DP state, its visited subset, ending location, minimum cost and predecessor transition. Select a state to inspect its graph.</p></div><div class="explorer-kpi"><small>DP STATES</small><b id="dpTraceCount">—</b></div></div>
+      <div class="explorer-grid"><div><div class="explorer-toolbar"><input id="dpTraceSearch" type="search" placeholder="Search subset or ending stop"><span id="dpTracePageLabel" class="note">Run Dynamic Programming to build the state catalogue.</span></div><div class="bf-table-wrap"><table class="bf-table"><thead><tr><th>State</th><th>Visited subset</th><th>Ends at</th><th>Cost</th><th></th></tr></thead><tbody id="dpTraceRows"></tbody></table></div><div class="bf-pagination"><button class="btn sm" id="dpTracePrev">← Previous</button><button class="btn sm" id="dpTraceNext">Next →</button></div></div><div class="explorer-detail"><h4 id="dpTraceTitle">Selected DP state</h4><canvas id="dpTraceCanvas" width="800" height="460" aria-label="Held Karp dynamic programming selected state graph"></canvas><div id="dpTraceInfo" class="bf-detail">Run Dynamic Programming, then select a state.</div></div></div>
+    </article>
+    <article class="glass method-explorer" id="dcExplorer">
+      <div class="method-explorer-head"><div><span class="pill">METHOD 04 · HEURISTIC</span><h3><span class="section-number">12</span> Divide &amp; Conquer — Complete Split &amp; Merge Explorer</h3><p class="note">Inspect every recursive subproblem, group split, base-case solution and merge comparison. Each selected event has its own route graph and details.</p></div><div class="explorer-kpi"><small>RECURSION EVENTS</small><b id="dcTraceCount">—</b></div></div>
+      <div class="explorer-grid"><div><div class="explorer-toolbar"><input id="dcTraceSearch" type="search" placeholder="Search event or pickup"><span id="dcTracePageLabel" class="note">Run Divide and Conquer to build the event catalogue.</span></div><div class="bf-table-wrap"><table class="bf-table"><thead><tr><th>Step</th><th>Operation</th><th>Subproblem / result</th><th>Checks</th><th></th></tr></thead><tbody id="dcTraceRows"></tbody></table></div><div class="bf-pagination"><button class="btn sm" id="dcTracePrev">← Previous</button><button class="btn sm" id="dcTraceNext">Next →</button></div></div><div class="explorer-detail"><h4 id="dcTraceTitle">Selected recursion event</h4><canvas id="dcTraceCanvas" width="800" height="460" aria-label="Divide and Conquer selected recursion event graph"></canvas><div id="dcTraceInfo" class="bf-detail">Run Divide and Conquer, then select an event.</div></div></div>
+    </article>
+  </div>
+</section>
+
+<section id="operations" class="sec">
+  <h2><span>13</span> Driver Operations Sheet</h2>
+  <p class="lead">Turn the best available route into a practical stop-by-stop briefing with passenger load, leg distance and cumulative distance.</p>
+  <div class="glass operations-panel"><div class="row"><div id="opsSummary" class="note">Run an algorithm to generate an operations sheet.</div><div class="export-row"><button class="btn" id="opsCsv">⬇ EXPORT STOP MANIFEST</button><button class="btn pri" id="opsPrint">PRINT OPERATIONS SHEET</button></div></div><div class="scroll"><table id="opsTable" class="cmp"></table></div><p class="note">The sheet lists the route order, pickup counts, passenger load, each leg distance and cumulative distance.</p></div>
+</section>
+<section id="scenarios" class="sec">
+  <h2><span>14</span> Scenario Vault</h2>
+  <p class="lead">Save named datasets in this browser, restore them later, and export or import a complete scenario file. Saved scenarios stay on this device and browser.</p>
+  <div class="glass scenario-panel"><div class="row"><label>Scenario name<input id="scenarioName" placeholder="e.g. Morning campus route"></label><button class="btn pri" id="saveScenario">＋ SAVE CURRENT SCENARIO</button><button class="btn" id="exportScenario">⬇ EXPORT SCENARIO JSON</button><label class="file-label">IMPORT SCENARIO<input id="importScenario" type="file" accept="application/json,.json"></label></div><div id="scenarioList" class="scenario-list"></div><p id="scenarioMsg" class="note" role="status">Scenarios are stored locally in this browser using local storage.</p></div>
+</section>
+<section id="conclusion" class="sec">
+  <h2><span>15</span> Final Conclusion</h2>
+  <div id="concl" class="glass"></div>
+</section>
+</main>
+<footer class="foot">College Bus Route Optimization · DAA Project · runs fully offline</footer>
+<div id="codeModal" class="code-modal" hidden role="dialog" aria-modal="true" aria-label="Python code">
+  <div class="code-box glass">
+    <div class="code-head"><h3>&lt;/&gt; Python Code</h3><button id="codeClose" class="btn sm" aria-label="Close">✕ CLOSE</button></div>
+    <div class="tabs" id="codeTabs" role="tablist"></div>
+    <p class="note">Plain Python (standard library only). The distance matrix is your current data from the Input section.</p>
+    <pre id="codeView" class="code-view"><code></code></pre>
+    <div class="row"><button id="codeCopy" class="btn pri">⧉ COPY CODE</button><button id="codeDl" class="btn">⬇ DOWNLOAD .py</button></div>
+  </div>
+</div>
+<script src="code.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
